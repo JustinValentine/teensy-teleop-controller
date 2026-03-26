@@ -6,13 +6,14 @@
 // --- Hardware Pin Definitions ---
 const int motorPinA = 2; 
 const int motorPinB = 3;
-const int triggerPin = 14;  
+// const int triggerPin = 14;  
+const int triggerPin = 17;  
 const int thumbXPin  = 15;  
 const int bumperPin  = 16;  
 const int thumbYPin  = 17;  
 
 // --- Objects & Network ---
-FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_16> canFD;
+FlexCAN_T4FD<CAN3, RX_SIZE_256, TX_SIZE_16> canFD;
 Adafruit_DRV2605 drv;
 
 // --- Haptic Spring Variables ---
@@ -50,9 +51,16 @@ void setup() {
   }
 
   canFD.begin();
-  canFD.setBaudRate(1000000);       
-  canFD.setBaudRateData(5000000);   
-  canFD.setClock(CLK_60MHz);
+
+  CANFD_timings_t config;
+  config.clock = CLK_60MHz;
+  config.baudrate = 1000000;    // 1Mbps Nominal speed
+  config.baudrateFD = 5000000;  // 5Mbps Data speed
+  config.propdelay = 190;
+  config.bus_length = 1;
+  config.sample = 70;
+  
+  canFD.setBaudRate(config);
 }
 
 void loop() {
@@ -78,6 +86,14 @@ void loop() {
   bool bumperPressed = !digitalRead(bumperPin); 
   int thumbX = applyDeadzone(analogRead(thumbXPin));
   int thumbY = applyDeadzone(analogRead(thumbYPin));
+  Serial.print("Trigger: ");
+  Serial.print(triggerPos);
+  Serial.print("\tThumb X: ");
+  Serial.print(thumbX);
+  Serial.print("\tThumb Y: ");
+  Serial.print(thumbY);
+  Serial.print("\tBumper: ");
+  Serial.println(bumperPressed ? "PRESSED" : "Open");
 
   // ---------------------------------------------------------
   // 3. Trigger Smart Spring
@@ -122,8 +138,8 @@ void loop() {
     CANFD_message_t txMsg;
     txMsg.id = 0x11;
     txMsg.flags.extended = 0;
-    txMsg.flags.fd = 1;      
-    txMsg.flags.brs = 1;     
+    txMsg.edl = 1;      
+    txMsg.brs = 1;     
     txMsg.len = 8;           
 
     txMsg.buf[0] = triggerPos >> 8;       
