@@ -87,14 +87,14 @@ void loop() {
   bool bumperPressed = !digitalRead(bumperPin);
   int thumbX = applyDeadzone(analogRead(thumbXPin));
   int thumbY = applyDeadzone(analogRead(thumbYPin));
-  Serial.print("Trigger: ");
-  Serial.print(triggerPos);
-  Serial.print("\tThumb X: ");
-  Serial.print(thumbX);
-  Serial.print("\tThumb Y: ");
-  Serial.print(thumbY);
-  Serial.print("\tBumper: ");
-  Serial.println(bumperPressed ? "PRESSED" : "Open");
+  // Serial.print("Trigger: ");
+  // Serial.print(triggerPos);
+  // Serial.print("\tThumb X: ");
+  // Serial.print(thumbX);
+  // Serial.print("\tThumb Y: ");
+  // Serial.print(thumbY);
+  // Serial.print("\tBumper: ");
+  // Serial.println(bumperPressed ? "PRESSED" : "Open");
 
   // ---------------------------------------------------------
   // 3. Trigger Smart Spring
