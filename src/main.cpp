@@ -6,10 +6,11 @@
 // --- Hardware Pin Definitions ---
 const int motorPinA = 2; 
 const int motorPinB = 3;
-const int triggerPin = 14;  
-const int thumbXPin  = 15;  
-const int bumperPin  = 16;  
-const int thumbYPin  = 17;  
+const int triggerPin = 20;  // FDBK
+const int thumbXPin  = 15;  // URX
+const int thumbYPin  = 14;  // URY
+const int r1Pin      = 17;  // R1
+const int r2Pin      = 16;  // R2
 
 // --- Objects & Network ---
 FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_16> canFD;
@@ -41,7 +42,8 @@ void setup() {
   
   pinMode(motorPinA, OUTPUT);
   pinMode(motorPinB, OUTPUT);
-  pinMode(bumperPin, INPUT_PULLUP);
+  pinMode(r1Pin, INPUT_PULLUP);
+  pinMode(r2Pin, INPUT_PULLUP);
   
   Wire.begin();
   if (drv.begin()) {
@@ -75,7 +77,7 @@ void loop() {
   // 2. READ LOCAL SENSORS
   // ---------------------------------------------------------
   int triggerPos = analogRead(triggerPin);
-  bool bumperPressed = !digitalRead(bumperPin); 
+  bool bumperPressed = (!digitalRead(r1Pin) || !digitalRead(r2Pin));
   int thumbX = applyDeadzone(analogRead(thumbXPin));
   int thumbY = applyDeadzone(analogRead(thumbYPin));
 

@@ -15,7 +15,7 @@ This firmware is designed to run on a custom carrier board with the following co
 - **CAN Transceiver:** TI TCAN337GDR (3.3V Logic, 5 Mbps)
 - **Main Haptic Driver:** TI DRV8833 Dual Motor Driver
 - **Secondary Haptic Driver:** TI DRV2605L (I2C)
-- **Inputs:** PS5 Trigger Module (Potentiometer + DC Motor), Adafruit 2-Axis Analog Thumb Stick, Tactile Bumper Switch
+- **Inputs:** PS5 Trigger Module (Potentiometer + DC Motor), Adafruit 2-Axis Analog Thumb Stick, R1/R2 shoulder inputs
 
 ## Pinout & Wiring
 
@@ -23,10 +23,11 @@ This firmware is designed to run on a custom carrier board with the following co
 | :--- | :--- | :--- |
 | **DRV8833 (Motor A)** | `Pin 2` (PWM) | Pushes the trigger outward |
 | **DRV8833 (Motor B)** | `Pin 3` (PWM) | Set to 0 (Grounded) |
-| **Trigger Potentiometer** | `Pin 14` (A0) | |
+| **Trigger Potentiometer (FDBK)** | `Pin 20` | |
 | **Joystick X-Axis** | `Pin 15` (A1) | Includes software deadzone (±40 from 512) |
-| **Joystick Y-Axis** | `Pin 17` (A3) | Includes software deadzone (±40 from 512) |
-| **Bumper Button** | `Pin 16` | Configured as `INPUT_PULLUP` |
+| **Joystick Y-Axis** | `Pin 14` (A0) | Includes software deadzone (±40 from 512) |
+| **R1 Input** | `Pin 17` | Configured as `INPUT_PULLUP` |
+| **R2 Input** | `Pin 16` | Configured as `INPUT_PULLUP` |
 | **DRV2605L SDA** | `Pin 18` | Requires 4.7kΩ - 10kΩ pull-up to 3.3V |
 | **DRV2605L SCL** | `Pin 19` | Requires 4.7kΩ - 10kΩ pull-up to 3.3V |
 | **TCAN337 TXD** | `Pad 31` (CAN3) | Bottom pad on Teensy 4.0 |
@@ -45,7 +46,7 @@ The controller broadcasts its physical state every 10ms (100Hz) on CAN ID `0x11`
 - `Byte 0/1`: Trigger Position (0-1023)
 - `Byte 2/3`: Joystick X-Axis (0-1023)
 - `Byte 4/5`: Joystick Y-Axis (0-1023)
-- `Byte 6`: Bumper State (0 or 1)
+- `Byte 6`: Shoulder State (`1` when either R1 or R2 is pressed, otherwise `0`)
 
 ### Listening (PC -> Teensy)
 
