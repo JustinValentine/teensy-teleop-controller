@@ -16,7 +16,7 @@ FlexCAN_T4<CAN3, RX_SIZE_256, TX_SIZE_16> canFD;
 Adafruit_DRV2605 drv;
 
 // --- Haptic Spring Variables ---
-const int triggerRestPos = 130;  // The ADC value when the trigger is untouched (Update this with your actual resting value)
+const int triggerRestPos = 130;  // The ADC value when the trigger is untouched
 float dynamicStiffness = 0.2;    // Starts light (kP multiplier)
 const float minStiffness = 0.2;  // Base spring force for moving through empty air
 const float maxStiffness = 2.0;  // Max pushback when gripper is stalled/crushing
@@ -80,7 +80,7 @@ void loop() {
   int thumbY = applyDeadzone(analogRead(thumbYPin));
 
   // ---------------------------------------------------------
-  // 3. HAPTIC PHYSICS (The Smart Spring)
+  // 3. Trigger Smart Spring
   // ---------------------------------------------------------
   // A spring always wants to return to its resting position.
   // The further you pull it, and the higher the PC sets the stiffness, the harder it fights.

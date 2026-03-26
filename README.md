@@ -6,16 +6,10 @@ This repository contains the Teensy 4.0 PlatformIO firmware for a custom, modula
 
 The controller leverages a PS5 trigger assembly and a 2-axis analog joystick to command a remote robotic gripper and rotational joints. Instead of static resistance, it features an admittance-based **"Smart Spring"** haptic feedback loop. The trigger dynamically changes its physical stiffness in real-time based on the torque/current data reported back from the remote Moteus controllers.
 
-### Key Features
-
-- **CAN-FD Integration:** Communicates at 5 Mbps data / 1 Mbps nominal, fully supporting the BRS (Bit Rate Switch) flag required by the Moteus ecosystem.
-- **Active Force Feedback:** Utilizes a DRV8833 motor driver running a 1kHz Proportional (PD) control loop to physically push back against the user's finger.
-- **Secondary Vibrotactile Haptics:** Integrates a DRV2605L via I2C to provide high-fidelity state-change clicks and velocity ticks.
-- **Hardware Deadzones:** Implements strict software deadbands on the analog joystick to prevent remote joint drift.
 
 ## Hardware Ecosystem
 
-This firmware is designed to run on a custom printed carrier board with the following components:
+This firmware is designed to run on a custom carrier board with the following components:
 
 - **Microcontroller:** Teensy 4.0
 - **CAN Transceiver:** TI TCAN337GDR (3.3V Logic, 5 Mbps)
@@ -59,13 +53,6 @@ The controller listens for dynamic stiffness updates from the PC on CAN ID `0x22
 
 - `Byte 0`: Stiffness Multiplier (0-255). `0` = moving through empty air (light spring). `255` = motor stalled/crushing (maximum pushback).
 
-## Software Dependencies
-
-PlatformIO installs libraries automatically from `platformio.ini`:
-
-1. `FlexCAN_T4` (for hardware CAN-FD routing on Teensy 4.x)
-2. `Adafruit DRV2605 Library` (for I2C vibrotactile control)
-3. `Wire` (standard Arduino I2C library, included with framework)
 
 ## Build & Upload (PlatformIO)
 
