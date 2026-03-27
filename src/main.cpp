@@ -17,25 +17,14 @@ FlexCAN_T4FD<CAN3, RX_SIZE_256, TX_SIZE_16> canFD;
 Adafruit_DRV2605 drv;
 
 // --- Haptic Spring Variables ---
-const int triggerRestPos = 130;  // The ADC value when the trigger is untouched
+const int triggerRestPos = 203;  // The ADC value when the trigger is untouched
 float dynamicStiffness = 0.2;    // Starts light (kP multiplier)
 const float minStiffness = 0.2;  // Base spring force for moving through empty air
 const float maxStiffness = 2.0;  // Max pushback when gripper is stalled/crushing
 
-// Joystick Deadzone Settings
-const int joyCenter = 512;   
-const int joyDeadzone = 40;  
-
 // Timing
 unsigned long lastCanSend = 0;
 const int canInterval = 10; 
-
-int applyDeadzone(int rawValue) {
-  if (abs(rawValue - joyCenter) < joyDeadzone) {
-    return joyCenter; 
-  }
-  return rawValue;
-}
 
 void setup() {
   Serial.begin(115200);
@@ -85,8 +74,8 @@ void loop() {
   // ---------------------------------------------------------
   int triggerPos = analogRead(triggerPin);
   bool bumperPressed = !digitalRead(bumperPin);
-  int thumbX = applyDeadzone(analogRead(thumbXPin));
-  int thumbY = applyDeadzone(analogRead(thumbYPin));
+  int thumbX = analogRead(thumbXPin);
+  int thumbY = analogRead(thumbYPin);
   // Serial.print("Trigger: ");
   // Serial.print(triggerPos);
   // Serial.print("\tThumb X: ");
@@ -139,18 +128,18 @@ void loop() {
     CANFD_message_t txMsg;
     txMsg.id = 0x11;
     txMsg.flags.extended = 0;
-    txMsg.edl = 1;      
-    txMsg.brs = 1;     
-    txMsg.len = 8;           
+    txMsg.edl = 1;
+    txMsg.brs = 1;
+    txMsg.len = 8;
 
-    txMsg.buf[0] = triggerPos >> 8;       
-    txMsg.buf[1] = triggerPos & 0xFF;     
-    txMsg.buf[2] = thumbX >> 8;           
-    txMsg.buf[3] = thumbX & 0xFF;         
-    txMsg.buf[4] = thumbY >> 8;           
-    txMsg.buf[5] = thumbY & 0xFF;         
-    txMsg.buf[6] = bumperPressed ? 1 : 0; 
-    txMsg.buf[7] = 0;                     
+    txMsg.buf[0] = triggerPos >> 8;
+    txMsg.buf[1] = triggerPos & 0xFF;
+    txMsg.buf[2] = thumbX >> 8;
+    txMsg.buf[3] = thumbX & 0xFF;
+    txMsg.buf[4] = thumbY >> 8;
+    txMsg.buf[5] = thumbY & 0xFF;
+    txMsg.buf[6] = bumperPressed ? 1 : 0;
+    txMsg.buf[7] = 0;
 
     canFD.write(txMsg);
   }
