@@ -4,8 +4,8 @@
 #include "Adafruit_DRV2605.h"
 
 // --- Hardware Pin Definitions ---
-const int motorPinA = 2; 
-const int motorPinB = 3;
+const int motorPinA = 6; 
+const int motorPinB = 7;
 const int thumbXPin  = 15;  // URX
 const int thumbYPin  = 14;  // URY
 // const int triggerPin = 16;  // FDBK 
@@ -17,10 +17,12 @@ FlexCAN_T4FD<CAN3, RX_SIZE_256, TX_SIZE_16> canFD;
 Adafruit_DRV2605 drv;
 
 // --- Haptic Spring Variables ---
-const int triggerRestPos = 203;  // The ADC value when the trigger is untouched
+const int triggerRestPos = 200;  // The ADC value when the trigger is untouched
 float dynamicStiffness = 0.2;    // Starts light (kP multiplier)
 const float minStiffness = 0.2;  // Base spring force for moving through empty air
 const float maxStiffness = 2.0;  // Max pushback when gripper is stalled/crushing
+int springForce = 0;
+
 
 // Timing
 unsigned long lastCanSend = 0;
@@ -58,14 +60,13 @@ void loop() {
   // 1. LISTEN TO THE PC (Update Haptic State)
   // ---------------------------------------------------------
   CANFD_message_t rxMsg;
-  if (canFD.read(rxMsg)) {
-    // If the PC sends a message on ID 0x22
-    if (rxMsg.id == 0x22) {
+  while (canFD.read(rxMsg)) {
+    // TODO: This is gross. I hate it.
+    if (rxMsg.id != 0x11 && rxMsg.len >= 1) {
+    // if (rxMsg.id == 0x22) {
       // Expecting Byte 0 to be a 0-255 "stiffness command"
-      int incomingStiffness = rxMsg.buf[0]; 
-      
-      // Map the 0-255 command to our actual kP multiplier bounds
-      dynamicStiffness = incomingStiffness * ((maxStiffness - minStiffness) / 255.0) + minStiffness;
+
+      springForce = rxMsg.buf[0]; 
     }
   }
 
@@ -88,25 +89,12 @@ void loop() {
   // ---------------------------------------------------------
   // 3. Trigger Smart Spring
   // ---------------------------------------------------------
-  // A spring always wants to return to its resting position.
-  // The further you pull it, and the higher the PC sets the stiffness, the harder it fights.
   
-  if (triggerPos > triggerRestPos) {
-    int displacement = triggerPos - triggerRestPos;
-    
-    // Calculate spring pushback (Hooke's Law: F = kx)
-    int springForce = displacement * dynamicStiffness;
-    
-    if (springForce > 255) springForce = 255; // Hardware PWM limit
-    
-    // Drive motor to push finger back toward rest
-    analogWrite(motorPinA, springForce);
-    analogWrite(motorPinB, 0);
-  } else {
-    // Trigger is completely released
-    analogWrite(motorPinA, 0);
-    analogWrite(motorPinB, 0);
-  }
+  if (springForce > 255) springForce = 255; // Hardware PWM limit
+  
+  // Drive motor to push finger back toward rest
+  analogWrite(motorPinA, springForce);
+  analogWrite(motorPinB, 0);
 
   // ---------------------------------------------------------
   // 4. I2C BUMPER HAPTICS (State Change Feedback)
@@ -139,7 +127,7 @@ void loop() {
     txMsg.buf[4] = thumbY >> 8;
     txMsg.buf[5] = thumbY & 0xFF;
     txMsg.buf[6] = bumperPressed ? 1 : 0;
-    txMsg.buf[7] = 0;
+    txMsg.buf[7] = springForce;
 
     canFD.write(txMsg);
   }
