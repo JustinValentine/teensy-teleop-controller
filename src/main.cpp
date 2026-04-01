@@ -35,6 +35,9 @@ void setup() {
   pinMode(motorPinB, OUTPUT);
   pinMode(triggerPin, INPUT);
   pinMode(bumperPin, INPUT_PULLUP);
+  // remove high pitch noise when doing haptic feedback
+  analogWriteFrequency(motorPinA, 22000);
+  analogWriteFrequency(motorPinB, 22000);
   
   Wire.begin();
   if (drv.begin()) {
